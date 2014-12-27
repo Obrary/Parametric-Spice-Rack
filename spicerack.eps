@@ -1,0 +1,227 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: -10 -10 1708 1276
+%%Creator: clayb.rpi@gmail.com
+%%Title: spice_rack
+%%CreationDate: 2011-04-24
+%%EOF
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% measurement constants
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/inch {72 mul} def
+/mm {2.83464567 mul} def
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% input parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+/num_sides 2 def
+/num_beams 6 def
+/num_bottles_per_shelf 6 def
+/num_shelves_high 2 def
+
+/material_thickness 0.245 inch def
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% minor parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% real bottle height: 132mm
+% real bottle width: 53mm
+% real bottle depth: 48mm
+
+/bottle_height 140 mm def
+/bottle_width 55 mm def
+/bottle_depth 50 mm def
+/rack_beam_width 1.5 inch def
+/side_foot_width 0.25 inch def
+
+% http://www.epiloglaser.com/tl_focus_lens_101.htm
+/laser_beam_width 0.0004 inch def
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/connect_block {
+  /sav save def
+  laser_beam_width 2 div dup translate
+  newpath
+  0 0 moveto
+  0 material_thickness laser_beam_width sub rlineto
+  material_thickness laser_beam_width sub 0 rlineto
+  0 material_thickness laser_beam_width sub neg rlineto
+  closepath
+  stroke
+  sav restore
+} def
+
+/connect_socket {
+  /sav save def
+  connect_block
+  material_thickness 2 mul 0 translate
+  connect_block
+  material_thickness 2 mul 0 translate
+  connect_block
+  sav restore
+} def
+
+/block_line1 {
+  /length exch def
+  /dt material_thickness 2 div def
+  /endlength length 2 div material_thickness 2.5 mul sub def
+  /sav save def
+  newpath
+  0 0 moveto
+  endlength 0 rlineto
+  0 material_thickness rlineto
+  material_thickness 0 rlineto
+  0 material_thickness neg rlineto
+  material_thickness 3 mul 0 rlineto
+  0 material_thickness rlineto
+  material_thickness 0 rlineto
+  0 material_thickness neg rlineto
+  endlength 0 rlineto
+  stroke
+  sav restore
+} def
+
+/block_line2 {
+  /length exch def
+  /dt material_thickness 2 div def
+  /endlength length 2 div material_thickness 0.5 mul sub def
+  /sav save def
+  newpath
+  0 0 moveto
+  endlength 0 rlineto
+  0 material_thickness rlineto
+  material_thickness 0 rlineto
+  0 material_thickness neg rlineto
+  endlength 0 rlineto
+  stroke
+  sav restore
+} def
+
+/rack_side {
+  /num_pieces exch def
+
+  /side_width {bottle_depth material_thickness 4 mul add} def
+  /side_height {bottle_height material_thickness add} def
+  /piece_height {side_height num_shelves_high 1 sub mul 7 material_thickness mul add} def
+  
+  % cut small holes first, then the outline.
+  /sav save def
+  1 1 num_shelves_high {
+    /sav3 save def
+    1 1 num_pieces {
+      /sav2 save def
+      90 rotate
+      material_thickness dup -2 mul translate
+      connect_socket
+      0 side_width -1 mul material_thickness 3 mul add translate
+      connect_socket
+      0 side_height translate
+      sav2 restore
+
+      /sav2 save def
+      side_width 2 div material_thickness 2.5 mul sub side_foot_width material_thickness add translate
+      connect_socket
+      sav2 restore
+
+      side_width 0 translate
+    } for
+    sav3 restore
+
+    0 side_height translate
+  } for
+  sav restore
+
+  % cut the top and bottom
+  /sav save def
+  /d side_foot_width 2 mul def
+  1 1 2 {
+    /sav2 save def
+    1 1 num_pieces {
+      newpath
+      0 0 moveto
+      d 0 lineto
+      d 0
+      d side_foot_width
+      side_width d sub side_foot_width
+      side_width d sub 0
+      curveto
+      d 0 rlineto
+      stroke
+      side_width 0 translate
+    } for
+    sav2 restore
+    0 piece_height translate
+  } for
+  sav restore
+
+  % cut the sides
+  /sav save def
+  0 1 num_pieces {
+    newpath
+    0 0 moveto
+    0 piece_height rlineto
+    stroke
+    side_width 0 translate
+  } for
+  sav restore
+} def
+
+/rack_beam {
+  /num_pieces exch def
+  /w rack_beam_width def
+  /h bottle_width num_bottles_per_shelf mul def
+
+  /sav save def
+  0 material_thickness h add translate
+  1 1 num_pieces {
+    w block_line2
+    w 0 translate
+  } for
+  sav restore
+
+  /sav save def
+  w num_pieces mul material_thickness translate
+  180 rotate
+  1 1 num_pieces {
+    w block_line1
+    w 0 translate
+  } for
+  sav restore
+
+  /sav save def
+  0 material_thickness translate
+  newpath
+  0 0 moveto
+  0 h lineto
+  stroke
+  1 1 num_pieces {
+    newpath
+    w 0 translate
+    0 0 moveto
+    0 h lineto
+    stroke
+  } for
+  sav restore
+} def
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% actual output
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% hairline width for cutting!
+0.00001 setlinewidth
+0 setgray
+
+num_sides 0 gt {
+  num_sides rack_side
+} if
+num_beams 0 gt {
+  bottle_depth material_thickness 4 mul add num_sides mul 10 add 0 translate
+  num_beams rack_beam
+} if
